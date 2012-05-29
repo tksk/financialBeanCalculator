@@ -26,7 +26,7 @@ public class BduTest {
 		assertNotEquals(0.1 * 3, 0.3);
 		assertEquals(
 				Bdu.compute("0.1 * 3"), 
-				new BigDecimal("0.1").multiply(new BigDecimal(3)));
+				new BigDecimal("0.1").multiply(BigDecimal.valueOf(3)));
 
 		assertEquals(Bdu.compute("0 / 1 + 1"), BigDecimal.ONE);
 
@@ -44,7 +44,7 @@ public class BduTest {
 
 		assertEquals(
 				Bdu.compute("1/3", mc),
-				BigDecimal.ONE.divide(new BigDecimal(3), mc));
+				BigDecimal.ONE.divide(BigDecimal.valueOf(3), mc));
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class BduTest {
 		assertEquals(
 				Bdu.compute("0.1 * 3 + left * right", param),
 
-				new BigDecimal("0.1").multiply(new BigDecimal(3))
+				new BigDecimal("0.1").multiply(BigDecimal.valueOf(3))
 					.add(
 						new BigDecimal(param.getLeft()).multiply(new BigDecimal(param.getRight()))
 					)
@@ -71,7 +71,7 @@ public class BduTest {
 
 		assertEquals(
 				Bdu.compute("1/3", MathContext.DECIMAL32, param /* won't be used... */),
-				BigDecimal.ONE.divide(new BigDecimal(3), MathContext.DECIMAL32));
+				BigDecimal.ONE.divide(BigDecimal.valueOf(3), MathContext.DECIMAL32));
 
 
 		CalcContext ctx = CalcContext.create()
@@ -101,7 +101,7 @@ public class BduTest {
 						+ "+ (5/1) + (0/123133)"  // 5 + 0
 						+ "+ (7^0) + (7^1) + (0^889894) + (1^7)" // 1 + 7 + 0 + 1
 						),
-				new BigDecimal("22")
+				BigDecimal.valueOf(22)
 			);
 
 
@@ -131,7 +131,20 @@ public class BduTest {
 
 		assertEquals(ctx.get("buf"), BigDecimal.valueOf(55));
 	}
-	
+
+	@Test
+	public void unicodeVars() {
+		CalcContext ctx = CalcContext.create()
+				.putAnd("合計", BigDecimal.ZERO);
+
+		for(int i=0; i<=10; i++) {
+			ctx.putAnd("i", i);
+			Bdu.compute("合計 = 合計 + i", ctx);
+		}
+
+		assertEquals(ctx.get("合計"), BigDecimal.valueOf(55));
+	}
+
 	@Test
 	public void areaOfTriangle() {
 		Triangle t = new Triangle();
@@ -156,6 +169,8 @@ class Triangle extends BigDecimalSupport {
 	private int height;
 
 	public BigDecimal area() {
+		BigDecimal.valueOf(base).multiply(BigDecimal.valueOf(height)).multiply(BigDecimal.valueOf(2));
+
 		return compute("base * height / 2");
 	}
 }
